@@ -6,27 +6,41 @@ install.packages("QCA")
 install.packages("stringr")
 install.packages("openxlsx")
 install.packages("readxl")
-library(datasets, pacman, QCA, stringr, openxlsx, readxl)
+library(pacman)
+library(QCA)
+library(stringr)
+library(openxlsx) 
+library(readxl)
+
 head(iris)
 
-## City Socio-economic Data
-B <- read_excel("~/Desktop/THSS2/DataSets/City_DataSet/City_Basic.xlsx")
+## Import Basic City Data
+
+file_url <- "https://github.com/joyful128/AirQuality/raw/main/City_DataSet/City_Basic.xlsx"
+
+# Temporary File Creation for Git-Rstudio Connection
+
+temp_file <- tempfile(fileext = ".xlsx")
+
+download.file(file_url, destfile = temp_file, mode = "wb")
+
+B <- read_excel(temp_file, sheet = 1, range = cell_cols(c(1,2,3,4,5,6,7)))
 colnames(B) <- c("City","Region",
                  "Kor_Name",
-                 "Latitude",
-                 "Longitude",
-                 "City_Size",
-                 "Pop",
-                 "GDP",
-                 "Edu")
+                 "Lat",
+                 "Lon",
+                 "Size",
+                 "P")
 
-## Capacity Data 
+## Capacity Data (GRDP)
+
 GDP <- read_delim(file = '~/Desktop/THSS2/DataSets/Socio-economic Data/Real_GRDP_Data.csv',
                   col_names = TRUE, delim = ';')
 C <- GDP[, c(1,4)]
 colnames(C) <- c("Kor_Name", "2019")
 
 ## Air Quality Data
+
 AQ1901 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 01월.xlsx")
 AQ1902 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 02월.xlsx")
 AQ1903 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 03월.xlsx")
