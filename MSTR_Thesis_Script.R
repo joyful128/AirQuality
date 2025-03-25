@@ -47,7 +47,7 @@ AQ_file_url <- "https://github.com/joyful128/AirQuality/raw/main/City_DataSet/20
 temp_file <- tempfile(fileext = ".xlsx")
 download.file(AQ_file_url, destfile = temp_file, mode = "wb")
 
-AQ1901 <- read_excel("2019년 01월.xlsx")
+AQ1901 <- read_excel("~/AQData/Jan_2019.xlsx")
 AQ1902 <- read_excel("2019년 02월.xlsx")
 AQ1903 <- read_excel("2019년 03월.xlsx")
 AQ1904 <- read_excel("2019년 04월.xlsx")
