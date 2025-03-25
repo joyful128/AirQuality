@@ -14,15 +14,17 @@ library(readxl)
 
 head(iris)
 
-## Import Basic City Data
-
-file_url <- "https://github.com/joyful128/AirQuality/raw/main/City_DataSet/City_Basic.xlsx"
 
 # Temporary File Creation for Git-Rstudio Connection
+
+file_url <- "https://github.com/joyful128/AirQuality/raw/main/City_DataSet/City_Basic.xlsx"
 
 temp_file <- tempfile(fileext = ".xlsx")
 
 download.file(file_url, destfile = temp_file, mode = "wb")
+
+
+## Import Basic City Data
 
 B <- read_excel(temp_file, sheet = 1, range = cell_cols(c(1,2,3,4,5,6,7)))
 colnames(B) <- c("City","Region",
@@ -41,11 +43,15 @@ colnames(C) <- c("Kor_Name", "2019")
 
 ## Air Quality Data
 
-AQ1901 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 01월.xlsx")
-AQ1902 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 02월.xlsx")
-AQ1903 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 03월.xlsx")
-AQ1904 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 04월.xlsx")
-AQ1905 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 05월.xlsx")
+AQ_file_url <- "https://github.com/joyful128/AirQuality/raw/main/City_DataSet/2019년 01월.xls.xlsx"
+temp_file <- tempfile(fileext = ".xlsx")
+download.file(AQ_file_url, destfile = temp_file, mode = "wb")
+
+AQ1901 <- read_excel("2019년 01월.xlsx")
+AQ1902 <- read_excel("2019년 02월.xlsx")
+AQ1903 <- read_excel("2019년 03월.xlsx")
+AQ1904 <- read_excel("2019년 04월.xlsx")
+AQ1905 <- read_excel("2019년 05월.xlsx")
 AQ1906 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 06월.xlsx")
 AQ1907 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 07월.xlsx")
 AQ1908 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 08월.xlsx")
