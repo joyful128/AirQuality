@@ -6,14 +6,17 @@ install.packages("QCA")
 install.packages("stringr")
 install.packages("openxlsx")
 install.packages("readxl")
+install.packages("psych")
 library(pacman)
 library(QCA)
 library(stringr)
 library(openxlsx) 
 library(readxl)
+library(psych)
 
 head(iris)
 
+'''
 
 # Temporary File Creation for Git-Rstudio Connection
 
@@ -23,42 +26,37 @@ temp_file <- tempfile(fileext = ".xlsx")
 
 download.file(file_url, destfile = temp_file, mode = "wb")
 
+''' 
 
 ## Import Basic City Data
 
-B <- read_excel(temp_file, sheet = 1, range = cell_cols(c(1,2,3,4,5,6,7)))
+B <- read_excel("~/RProjects/AirQuality/City_DataSet/City_Basic.xlsx")
 colnames(B) <- c("City","Region",
                  "Kor_Name",
                  "Lat",
                  "Lon",
                  "Size",
-                 "P")
+                 "Pop",
+                 "GRDP",
+                 "Edu"
+                 )
 
-## Capacity Data (GRDP)
-
-GDP <- read_delim(file = '~/Desktop/THSS2/DataSets/Socio-economic Data/Real_GRDP_Data.csv',
-                  col_names = TRUE, delim = ';')
-C <- GDP[, c(1,4)]
-colnames(C) <- c("Kor_Name", "2019")
 
 ## Air Quality Data
 
-AQ_file_url <- "https://github.com/joyful128/AirQuality/raw/main/City_DataSet/2019년 01월.xls.xlsx"
-temp_file <- tempfile(fileext = ".xlsx")
-download.file(AQ_file_url, destfile = temp_file, mode = "wb")
+AQ1901 <- read_excel("~/RProjects/AirQuality/Air_Quality_2019/Jan_2019.xlsx")
+AQ1902 <- read_excel("~/RProjects/AirQuality/Air_Quality_2019/Feb_2019.xlsx")
+AQ1903 <- read_excel("~/RProjects/AirQuality/Air_Quality_2019/Mar_2019.xlsx")
+AQ1904 <- read_excel("~/RProjects/AirQuality/Air_Quality_2019/Apr_2019.xlsx")
+AQ1905 <- read_excel("~/RProjects/AirQuality/Air_Quality_2019/May_2019.xlsx")
+AQ1906 <- read_excel("~/RProjects/AirQuality/Air_Quality_2019/Jun_2019.xlsx")
+AQ1907 <- read_excel("~/RProjects/AirQuality/Air_Quality_2019/Jul_2019.xlsx")
+AQ1908 <- read_excel("~/RProjects/AirQuality/Air_Quality_2019/Aug_2019.xlsx")
+AQ1909 <- read_excel("~/RProjects/AirQuality/Air_Quality_2019/Sep_2019.xlsx")
+AQ1910 <- read_excel("~/RProjects/AirQuality/Air_Quality_2019/Oct_2019.xlsx")
+AQ1911 <- read_excel("~/RProjects/AirQuality/Air_Quality_2019/Nov_2019.xlsx")
+AQ1912 <- read_excel("~/RProjects/AirQuality/Air_Quality_2019/Dec_2019.xlsx")
 
-AQ1901 <- read_excel("~/AQData/Jan_2019.xlsx")
-AQ1902 <- read_excel("2019년 02월.xlsx")
-AQ1903 <- read_excel("2019년 03월.xlsx")
-AQ1904 <- read_excel("2019년 04월.xlsx")
-AQ1905 <- read_excel("2019년 05월.xlsx")
-AQ1906 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 06월.xlsx")
-AQ1907 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 07월.xlsx")
-AQ1908 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 08월.xlsx")
-AQ1909 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 09월.xlsx")
-AQ1910 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 10월.xlsx")
-AQ1911 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 11월.xlsx")
-AQ1912 <- read_excel("~/Desktop/THSS2/DataSets/Air Quality Data/2019/2019년 12월.xlsx")
 
 # Data Aggregation
 RawAQ <- bind_rows(AQ1901, 
@@ -74,22 +72,18 @@ RawAQ <- bind_rows(AQ1901,
                    AQ1911,
                    AQ1912)
 
-ProsAQ <- RawAQ[RawAQ$망 == "도시대기",c(1:6,9,10)]
+ProsAQ <- RawAQ[RawAQ$망 == "도시대기",c(1:5,10)]
 colnames(ProsAQ) <- c("Location", 
                       "Type", 
                       "StationCode", 
                       "StationName", 
                       "DateTime", 
-                      "SO2", 
-                      "NO2", 
                       "PM10"
-)
+                      )
 
 FiltAQ <- ProsAQ %>%
   group_by(StationCode) %>%
-  filter(sum(!is.na(PM10)) >= 6570,
-         sum(!is.na(NO2)) >= 6570,
-         sum(!is.na(SO2)) >= 6570) %>%
+  filter(sum(!is.na(PM10)) >= 6570) %>%
   ungroup()  
 
 # Calculating Average Data
@@ -98,8 +92,6 @@ avg_AQ <- FiltAQ %>%
   summarize(
     Location = first(Location),
     StationName = first(StationName),
-    avg_SO2 = mean(SO2, na.rm = TRUE),
-    avg_NO2 = mean(NO2, na.rm = TRUE), 
     avg_PM10 = mean(PM10, na.rm = TRUE) 
   )
 
@@ -145,8 +137,6 @@ Spc_Muni <- AQ1 %>%
   summarize(
     StationName = first(StationName),
     StationCode = first(StationCode),
-    SO2 = first(avg_SO2),
-    NO2 = first(avg_NO2),
     PM10 = first(avg_PM10),
   ) %>%
   ungroup() %>%
@@ -167,8 +157,6 @@ Nrm_Muni <- AQ1 %>%
   summarize(
     StationName = first(StationName),
     StationCode = first(StationCode),
-    SO2 = first(avg_SO2),
-    NO2 = first(avg_NO2),
     PM10 = first(avg_PM10),
   ) %>%
   ungroup()  
@@ -177,115 +165,104 @@ AQ <- bind_rows(Spc_Muni,
                 Nrm_Muni)
 colnames(AQ) <- c("Kor_Name",
                   "StationName",
-                  "StationCode",
-                  "SO2", 
-                  "NO2", 
-                  "PM10"
+                  "StationCode", 
+                  "A"
 )
 
 
-## ICLEI Membership
-M_impt <- read_excel("~/Desktop/THSS2/DataSets/City_DataSet/CityData_member.xlsx")
-M <- M_impt[,c(4,5)]
+## ICLEI Membership & Policy Data
+
+M_impt <- read_excel("~/RProjects/AirQuality/City_DataSet/CityData_member.xlsx")
+M <- M_impt[,c(4,5,6)]
 colnames(M) <- c("Kor_Name",
-                 "ICLEI"
+                 "M",
+                 "Y"
 )
 
+
+## Mayor Political Affiliation
+
+P_impt <- read.csv("~/RProjects/AirQuality/City_DataSet/2018_Election_Results.csv")
+Mayor_df <- P_impt[P_impt$선거명 == "시·도지사선거" | P_impt$선거명 == "구·시·군의 장선거", c(3, 5)]
+colnames(Mayor_df) <- c("Kor_Name",
+                        "Party"
+                        )
+# Find Matches
+match_df <- Mayor_df[Mayor_df$Kor_Name %in% B$Kor_Name, ]
+
+# Value Assignment
+P <- match_df %>%
+  mutate(P_Name = case_when(
+    Party == "더불어민주당" ~ "Liberal",
+    Party == "자유한국당" ~ "Conservative",
+    Party == "무소속" ~ "Independant",
+    Party == "민주평화당" ~ "Liberal",
+    TRUE ~ Party
+  )) %>%
+  select(-Party)
+
+P <- P %>%
+  mutate(P = case_when(
+    P_Name == "Liberal" ~ 1,
+    P_Name == "Conservative" ~ 0,
+    P_Name == "Independant" ~ 0.5,
+    TRUE ~ NA_real_  
+  ))
 
 ## Bind All Data 
 CtyDt <- B %>%
   inner_join(AQ, by = "Kor_Name") %>%
-  inner_join(M, by = "Kor_Name")
+  inner_join(M, by = "Kor_Name") %>%
+  inner_join(P, by = "Kor_Name")
 
 Dt <- CtyDt %>%
   filter(Pop >= 200000) %>%
-  mutate(GDPcapt = (GDP / Pop)*1000000000) %>%
-  select(Latitude,
-         Longitude,
-         City_Size,
-         Pop,
-         GDPcapt,
-         Edu,
-         ICLEI,
-         PM10,
-         NO2,
-         SO2)
+  mutate(C = (GRDP/Pop)*1000000000) %>%
+  select(City,
+         C,
+         M,
+         Y,
+         A,
+         P
+         )
 
-rownames(Dt) <- CtyDt$City
+### Yeosu's Mayor ran as independant but later rejoined the liberal party
+Dt$P[42] <- 1
 
-## Policy Data
-Pol_all <- read_excel("~/Desktop/THSS2/DataSets/Policy Data/Policy_Data_2.xlsx")
-colnames(Pol_all) <- c("Kor_Name","Policy")
+'''
+write.csv(Dt, "sample_dt.csv", row.names = FALSE)
+'''
 
-Pol_Key <- read_excel("~/Desktop/THSS2/DataSets/Policy Data/Policy_Keyword.xlsx") %>%
-  select(Type,
-         Subcatergory,
-         Keyword,
-         English
-  )
-colnames(Pol_Key) <- c("Cat", "SubCat", "Keyword", "Trans")
-
-Key_Match <- expand_grid(Pol_all, Pol_Key) %>%
-  mutate(Match = str_detect(Policy, Keyword)) %>%
-  filter(Match == TRUE) %>%
-  select(-Match)
-
-Group_Match <-Key_Match %>%
-  group_by(Kor_Name, Policy) %>%
-  summarise(
-    Keys = paste(Keyword, collapse = ", "),
-    Translations = paste(Trans, collapse = ", "),
-    Ct_g = paste(Cat, collapse = ", "),
-    SbC_g = paste(SubCat, collapse = ", "),
-    .groups = "drop"
-  )
+## Summary Staticstics
+describe(Dt)
 
 
 
-## Assign Groups to Data for QCA
+### QCA 
 
-## Policy Data
-P_cl <- Group_Match %>%
-  group_by(Kor_Name, Policy) %>%
-  summarise(
-    Categories = paste(Ct_g, collapse = ", "),
-    Unique_Categories = paste(unique(Ct_g), collapse = ", "),
-    Adaptation_Count = sum(str_count(Ct_g, "Adaptation")),
-    Mitigation_Count = sum(str_count(Ct_g, "Mitigation")),
-    Other_Count = sum(str_count(Ct_g, "Other")),
-    AirQ_Count = sum(str_count(Ct_g, "AirQuality")),
-    # Classification logic
-    Category = case_when(
-      AirQ_Count > 0 ~ "Air_Quality",
-      (Adaptation_Count > 0 | Mitigation_Count > 0) & Other_Count == 0 ~ "Dedicated", 
-      (Adaptation_Count > 0 | Mitigation_Count > 0) & Other_Count > 0 ~ "Mixed",      
-      Adaptation_Count == 0 & Mitigation_Count == 0 & Other_Count > 0 ~ "Other",
-      TRUE ~ "Unclassified"
-    ),
-    .groups = "drop"
-  )
+## Assign Binary 
 
-P_score <- P_cl %>%
-  group_by(Kor_Name, Category) %>%
-  summarise(Count = n(), .groups = "drop") %>%
-  pivot_wider(names_from = Category, values_from = Count, values_fill = 0) %>%
-  ungroup()
+Dt$A <- as.numeric(Dt$A >= 47)
+Dt$C <- as.numeric(Dt$C > 30000000)
+Dt$M <- as.numeric(as.logical(Dt$M))
+Dt$Y <- as.numeric(as.logical(Dt$Y)) 
+Dt$P <- as.numeric(as.logical(Dt$P))
 
-P_fz <- P_score %>%
-  mutate(
-    Total = Dedicated + Mixed + Other + Air_Quality,
-    Dedicated = Dedicated / Total,
-    Mixed = Mixed / Total,
-    Other = Other / Total,
-    Air_Quality = Air_Quality / Total
-  )
+'''
+str(Dt)
+sapply(Dt, class)
+colSums(is.na(Dt))
+'''
 
+# Truth Table
 
-## QCA 
-
-truth <- truthTable(Dt, outcome = "ICLEI", incl.cut = 0.8)
+truth <- truthTable(Dt, 
+                    outcome = "Y", 
+                    conditions = c("C","A","M","P"), 
+                    incl.cut = 0.8)
 print(truth)
 
+# Minimization
 
-
-
+complex_sol <- minimize(truth, details = TRUE)
+print(complex_sol)
